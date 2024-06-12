@@ -73,7 +73,7 @@ const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
 
 /////////////////////////////////////////////////
 
-// Вывести все движения денеж. средств на экран
+// 1__Вывести все движения денеж. средств на экран
 const displayMovements = function (movements) {
     containerMovements.innerHTML = "";
 
@@ -83,7 +83,7 @@ const displayMovements = function (movements) {
             <div class="movements__row">
                 <div class="movements__type movements__type--${type}">
                     ${index + 1} ${type}</div>
-                <div class="movements__value">${mov}</div>
+                <div class="movements__value">${mov}€</div>
             </div>`;
 
         containerMovements.insertAdjacentHTML("afterBegin", html);
@@ -92,11 +92,58 @@ const displayMovements = function (movements) {
 
 displayMovements(account1.movements);
 
-// Создать никнейм пользователя
+// 3__Посчитать и вывести баланс из операций
+const calcDisplayBalance = function (movements) {
+    const balance = movements.reduce(function (totalBalance, movement) {
+        return totalBalance + movement;
+    }, 0);
 
+    labelBalance.textContent = `${balance}€`;
+};
+
+calcDisplayBalance(account1.movements);
+
+// 4__Показать сумму по пополнениям\выводам
+const calcDisplaySummary = function (movements) {
+    const incomes = movements
+        .filter(function (movement) {
+            if (movement > 0) return movement;
+        })
+        .reduce(function (total, movement) {
+            return total + movement;
+        }, 0);
+    labelSumIn.textContent = `${incomes}€`;
+
+    const outcomes = movements
+        .filter(function (movement) {
+            if (movement < 0) return movement;
+        })
+        .reduce(function (total, movement) {
+            return total + movement;
+        }, 0);
+    labelSumOut.textContent = `${Math.abs(outcomes)}€`;
+
+    const interest = movements
+        .filter(function (movement) {
+            if (movement > 0) return movement;
+        })
+        .map(function (deposit) {
+            return (deposit * 1.2) / 100;
+        })
+        .filter(function (interest) {
+            return interest >= 1;
+        })
+        .reduce(function (total, interest) {
+            return total + interest;
+        }, 0);
+    labelSumInterest.textContent = `${interest}€`;
+};
+
+calcDisplaySummary(account1.movements);
+
+// 2__Создать никнейм пользователя
 // Берем массив объектов-аккаунтов (accs), и для каждого аккаунта добавляем ключ username,
 // который равен Имени владельца аккаунта (accountObj.owner), но с изменениями на буквы
-
 const createUsernames = function (accs) {
     accs.forEach(function (accountObj) {
         accountObj.username = accountObj.owner
@@ -110,4 +157,3 @@ const createUsernames = function (accs) {
 };
 
 createUsernames(accounts);
-console.log(accounts);
