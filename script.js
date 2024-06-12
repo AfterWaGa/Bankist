@@ -6,7 +6,7 @@
 const account1 = {
     owner: "Jonas Schmedtmann",
     movements: [200, 450, -400, 3000, -650, -130, 70, 1300],
-    interestRate: 1.2, // %
+    interestRate: 1.2,
     pin: 1111,
 };
 
@@ -73,7 +73,7 @@ const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
 
 /////////////////////////////////////////////////
 
-// 1__Вывести все движения денеж. средств на экран
+// 1__Вывести все транзакции
 const displayMovements = function (movements) {
     containerMovements.innerHTML = "";
 
@@ -90,8 +90,6 @@ const displayMovements = function (movements) {
     });
 };
 
-displayMovements(account1.movements);
-
 // 3__Посчитать и вывести баланс из операций
 const calcDisplayBalance = function (movements) {
     const balance = movements.reduce(function (totalBalance, movement) {
@@ -101,11 +99,9 @@ const calcDisplayBalance = function (movements) {
     labelBalance.textContent = `${balance}€`;
 };
 
-calcDisplayBalance(account1.movements);
-
 // 4__Показать сумму по пополнениям\выводам
-const calcDisplaySummary = function (movements) {
-    const incomes = movements
+const calcDisplaySummary = function (acc) {
+    const incomes = acc.movements
         .filter(function (movement) {
             if (movement > 0) return movement;
         })
@@ -114,7 +110,7 @@ const calcDisplaySummary = function (movements) {
         }, 0);
     labelSumIn.textContent = `${incomes}€`;
 
-    const outcomes = movements
+    const outcomes = acc.movements
         .filter(function (movement) {
             if (movement < 0) return movement;
         })
@@ -123,12 +119,12 @@ const calcDisplaySummary = function (movements) {
         }, 0);
     labelSumOut.textContent = `${Math.abs(outcomes)}€`;
 
-    const interest = movements
+    const interest = acc.movements
         .filter(function (movement) {
             if (movement > 0) return movement;
         })
         .map(function (deposit) {
-            return (deposit * 1.2) / 100;
+            return (deposit * acc.interestRate) / 100;
         })
         .filter(function (interest) {
             return interest >= 1;
@@ -138,8 +134,6 @@ const calcDisplaySummary = function (movements) {
         }, 0);
     labelSumInterest.textContent = `${interest}€`;
 };
-
-calcDisplaySummary(account1.movements);
 
 // 2__Создать никнейм пользователя
 // Берем массив объектов-аккаунтов (accs), и для каждого аккаунта добавляем ключ username,
@@ -157,3 +151,37 @@ const createUsernames = function (accs) {
 };
 
 createUsernames(accounts);
+
+// 5__ЛОГИН
+let currentUser;
+
+btnLogin.addEventListener("click", function (e) {
+    e.preventDefault();
+
+    // Если никнейм есть в массиве, создается залогиненый пользователь
+    currentUser = accounts.find(function (acc) {
+        return acc.username === inputLoginUsername.value;
+    });
+
+    // Если пароль залог. пользователя равен введенному
+    if (currentUser?.pin === Number(inputLoginPin.value)) {
+        // Поменять приветствие
+        labelWelcome.textContent = `Welcome back, ${currentUser.owner.split(" ")[0]}`;
+
+        // Отобразить интерфейс
+        containerApp.style.opacity = 100;
+
+        // Очистить поля ввода
+        inputLoginUsername.value = inputLoginPin.value = "";
+        inputLoginPin.blur();
+
+        // Отобразить транзакции
+        displayMovements(currentUser.movements);
+
+        // Отобразить баланс
+        calcDisplayBalance(currentUser.movements);
+
+        // Отобразить суммы по пополнениям\выводам
+        calcDisplaySummary(currentUser);
+    }
+});
