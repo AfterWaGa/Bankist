@@ -91,12 +91,12 @@ const displayMovements = function (movements) {
 };
 
 // 3__Посчитать и вывести баланс из операций
-const calcDisplayBalance = function (movements) {
-    const balance = movements.reduce(function (totalBalance, movement) {
+const calcDisplayBalance = function (acc) {
+    acc.balance = acc.movements.reduce(function (totalBalance, movement) {
         return totalBalance + movement;
     }, 0);
 
-    labelBalance.textContent = `${balance}€`;
+    labelBalance.textContent = `${acc.balance}€`;
 };
 
 // 4__Показать сумму по пополнениям\выводам
@@ -152,6 +152,18 @@ const createUsernames = function (accs) {
 
 createUsernames(accounts);
 
+// 6.1__Обновить интерфейс по транзакциям
+const updateUI = function (acc) {
+    // Отобразить транзакции
+    displayMovements(acc.movements);
+
+    // Отобразить баланс
+    calcDisplayBalance(acc);
+
+    // Отобразить суммы по пополнениям\выводам
+    calcDisplaySummary(acc);
+};
+
 // 5__ЛОГИН
 let currentUser;
 
@@ -175,13 +187,47 @@ btnLogin.addEventListener("click", function (e) {
         inputLoginUsername.value = inputLoginPin.value = "";
         inputLoginPin.blur();
 
-        // Отобразить транзакции
-        displayMovements(currentUser.movements);
-
-        // Отобразить баланс
-        calcDisplayBalance(currentUser.movements);
-
-        // Отобразить суммы по пополнениям\выводам
-        calcDisplaySummary(currentUser);
+        // Обновить интерфейс
+        updateUI(currentUser);
     }
+});
+
+// 6__Перевод денег другому пользователю
+btnTransfer.addEventListener("click", function (e) {
+    e.preventDefault();
+
+    const amount = Number(inputTransferAmount.value);
+    // Находим получателя
+    const receiverAcc = accounts.find(function (acc) {
+        return acc.username === inputTransferTo.value;
+    });
+    inputTransferAmount.value = inputTransferTo.value = "";
+
+    if (amount > 0 && receiverAcc && currentUser.balance >= amount && receiverAcc?.username !== currentUser.username) {
+        // Переводы
+        currentUser.movements.push(-amount);
+        receiverAcc.movements.push(amount);
+
+        // Обновить интерфейс
+        updateUI(currentUser);
+    }
+});
+
+// 7__Удаление аккаунта (из массива)
+btnClose.addEventListener("click", function (e) {
+    e.preventDefault();
+
+    if (currentUser.username === inputCloseUsername.value && currentUser.pin === Number(inputClosePin.value)) {
+        const index = accounts.findIndex(function (acc) {
+            return acc.username === currentUser.username;
+        });
+
+        // Удалить аккаунт
+        accounts.splice(index, 1);
+
+        // Скрыть интерфейс
+        containerApp.style.opacity = 0;
+    }
+    // Сброс полей ввода
+    inputCloseUsername.value = inputClosePin.value = "";
 });
