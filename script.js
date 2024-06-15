@@ -74,10 +74,16 @@ const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
 /////////////////////////////////////////////////
 
 // 1__Вывести все транзакции
-const displayMovements = function (movements) {
+const displayMovements = function (movements, sort = false) {
     containerMovements.innerHTML = "";
 
-    movements.forEach(function (mov, index) {
+    const movs = sort
+        ? movements.slice().sort(function (a, b) {
+              return a - b;
+          })
+        : movements;
+
+    movs.forEach(function (mov, index) {
         const type = mov > 0 ? "deposit" : "withdrawal";
         const html = `
             <div class="movements__row">
@@ -251,4 +257,13 @@ btnClose.addEventListener("click", function (e) {
     }
     // Сброс полей ввода
     inputCloseUsername.value = inputClosePin.value = "";
+});
+
+// 9__Сортировка переводов по возрастанию
+let sorted = false;
+
+btnSort.addEventListener("click", function (e) {
+    e.preventDefault();
+    displayMovements(currentUser.movements, !sorted);
+    sorted = !sorted;
 });
