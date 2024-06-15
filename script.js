@@ -213,6 +213,27 @@ btnTransfer.addEventListener("click", function (e) {
     }
 });
 
+// 8__Запрос на кредит
+// Работает, если есть хотя бы одно пополнение >= 10% от кредита.
+btnLoan.addEventListener("click", function (e) {
+    e.preventDefault();
+
+    const amount = Number(inputLoanAmount.value);
+    if (
+        amount > 0 &&
+        currentUser.movements.some(function (movement) {
+            return movement >= amount * 0.1;
+        })
+    ) {
+        // Добавление суммы кредита
+        currentUser.movements.push(amount);
+
+        // Обновление интерфейса
+        updateUI(currentUser);
+    }
+    inputLoanAmount.value = "";
+});
+
 // 7__Удаление аккаунта (из массива)
 btnClose.addEventListener("click", function (e) {
     e.preventDefault();
